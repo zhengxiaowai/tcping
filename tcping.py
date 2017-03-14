@@ -192,10 +192,10 @@ class Ping(object):
 
 
 @click.command()
-@click.option('--port', '-p', default=80, type=click.INT, help='tcp port')
-@click.option('--count', '-c', default=10, type=click.INT, help='try connections counts')
-@click.option('--timeout', '-t', default=1, type=click.FLOAT, help='timeout seconds')
-@click.option('--report/--no-report', default=False, help='show report to replace statistics')
+@click.option('--port', '-p', default=80, type=click.INT, help='Tcp port')
+@click.option('--count', '-c', default=10, type=click.INT, help='Try connections counts')
+@click.option('--timeout', '-t', default=1, type=click.FLOAT, help='Timeout seconds')
+@click.option('--report/--no-report', default=False, help='Show report to replace statistics')
 @click.argument('host')
 def cli(host, port, count, timeout, report):
     ping = Ping(host, port, timeout)
