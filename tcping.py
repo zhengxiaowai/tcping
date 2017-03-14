@@ -10,7 +10,9 @@ import time
 import click
 
 from collections import namedtuple
+from functools import partial
 from six.moves import zip_longest
+from six import print_
 from timeit import default_timer as timer
 from prettytable import PrettyTable
 
@@ -23,6 +25,8 @@ Statistics = namedtuple('Statistics', [
     'minimum',
     'maximum',
     'average'])
+
+iprint = partial(print_, flush=True)
 
 
 def avg(x):
@@ -165,12 +169,12 @@ class Ping(object):
                     ((self._host, self._port), None))
                 s_runtime = 1000 * (cost_time)
 
-                print("Connected to %s[:%s]: seq=%d time=%.2f ms" % (
+                iprint("Connected to %s[:%s]: seq=%d time=%.2f ms" % (
                     self._host, self._port, n, s_runtime))
 
                 self._conn_times.append(s_runtime)
             except socket.timeout:
-                print("Connected to %s[:%s]: seq=%d time out!" % (
+                iprint("Connected to %s[:%s]: seq=%d time out!" % (
                     self._host, self._port, n))
                 self._failed += 1
 
@@ -201,9 +205,9 @@ def cli(host, port, count, timeout, report):
         pass
 
     if report:
-        print(ping.result.table)
+        iprint(ping.result.table)
     else:
-        print(ping.result.raw)
+        iprint(ping.result.raw)
 
 
 if __name__ == '__main__':
