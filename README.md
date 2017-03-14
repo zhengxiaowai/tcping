@@ -10,6 +10,10 @@
 ## Usage
 
 ```
+pip install tcping
+```
+
+```
 ➜  ~ tcping api.github.com
 Connected to api.github.com[:80]: seq=1 time=236.44 ms
 Connected to api.github.com[:80]: seq=2 time=237.99 ms
