@@ -2,7 +2,7 @@
 
 一个类似于 ping 的系统工具，
 检测在连接 tcp 时候的延迟，
-比较正确是反应出网络的延迟情况，比较 tcp 用途比较广。
+比较正确是反应出网络的延迟情况，笔记 tcp 用途比较广。
 
 虽然和 icmp 的 ping 原理不同，ping 命令也能很大程度上反映出网络的延迟，
 但是该矫情还是要矫情一把的。
@@ -24,6 +24,7 @@ Connected to api.github.com[:80]: seq=10 time=411.50 ms
 
 --- api.github.com[:80] tcping statistics ---
 10 connections, 8 successed, 2 failed, 80.00% success rate
+minimum = 390.55ms, maximum = 617.20ms, average = 440.25ms
 ```
 
 呵呵，GFW，66666
