@@ -2,70 +2,31 @@
 # -*- coding: utf-8 -*-
 
 """
-    Use tcp ping host
+    Use tcp ping host, just like ping comppand
 """
 
-import sys
 import socket
 import time
 import click
-import os
-import json
 
+from collections import namedtuple
+from itertools import zip_longest
 from timeit import default_timer as timer
 from prettytable import PrettyTable
 
-USER_HOME = os.path.expanduser('~')
-HOST_SET_CONFIG = os.path.join(USER_HOME, '.ipset.json')
+Statistics = namedtuple('Statistics', [
+    'host',
+    'port',
+    'successed',
+    'failed',
+    'success_rate',
+    'minimum',
+    'maximum',
+    'average'])
 
 
 def avg(x):
     return sum(x) / float(len(x))
-
-
-def load_host_set(conf_path):
-    hostset = {}
-    with open(conf_path) as f:
-        hostset = json.load(f)
-
-    return hostset
-
-
-def create_host_set(conf_path):
-    hostset = {}
-    linode_host_list = [
-        'speedtest.newark.linode.com',
-        'speedtest.atlanta.linode.com',
-        'speedtest.dallas.linode.com',
-        'speedtest.fremont.linode.com',
-        'speedtest.frankfurt.linode.com',
-        'speedtest.london.linode.com',
-        'speedtest.singapore.linode.com',
-        'speedtest.tokyo.linode.com',
-        'speedtest.tokyo2.linode.com']
-
-    vultr_host_list = [
-        'hnd-jp-ping.vultr.com',
-        'syd-au-ping.vultr.com',
-        'fra-de-ping.vultr.com',
-        'ams-nl-ping.vultr.com',
-        'lon-gb-ping.vultr.com',
-        'par-fr-ping.vultr.com',
-        'wa-us-ping.vultr.com',
-        'sjo-ca-us-ping.vultr.com',
-        'lax-ca-us-ping.vultr.com',
-        'il-us-ping.vultr.com',
-        'tx-us-ping.vultr.com',
-        'nj-us-ping.vultr.com',
-        'ga-us-ping.vultr.com',
-        'fl-us-ping.vultr.com']
-
-    hostset['linode'] = map(lambda host: (host, 80), linode_host_list)
-    hostset['vultr'] = map(lambda host: (host, 80), vultr_host_list)
-
-    if not os.path.exists(conf_path):
-        with open(conf_path, 'wb') as f:
-            json.dump(hostset, f, indent=4)
 
 
 class Socket(object):
@@ -84,17 +45,82 @@ class Socket(object):
         self._s.close()
 
 
+class Print(object):
+    def __init__(self):
+        self.table_field_names = []
+        self.rows = []
+
+    @property
+    def raw(self):
+        statistics_group = []
+        for row in self.rows:
+            total = row.successed + row.failed
+            statistics_header = '\n--- {}[:{}] tcping statistics ---'.format(
+                row.host, row.port)
+            statistics_body = '\n{} connections, {} successed, {} failed, {} success rate'.format(
+                total, row.successed, row.failed, row.success_rate)
+            statistics_footer = '\nminimum = {}, maximum = {}, average = {}'.format(
+                row.minimum, row.maximum, row.average)
+
+            statistics = statistics_header + statistics_body + statistics_footer
+            statistics_group.append(statistics)
+
+        return ''.join(statistics_group)
+
+    @property
+    def table(self):
+        x = PrettyTable()
+        x.field_names = self.table_field_names
+
+        for row in self.rows:
+            x.add_row(row)
+
+        return '\n' + x.get_string()
+
+    def set_table_field_names(self, field_names):
+        self.table_field_names = field_names
+
+    def add_statistics(self, row):
+        self.rows.append(row)
+
+
+class Timer(object):
+    def __init__(self):
+        self._start = 0
+        self._stop = 0
+
+    def start(self):
+        self._start = timer()
+
+    def stop(self):
+        self._stop = timer()
+
+    def cost(self, funcs, args):
+        self.start()
+        for func, arg in zip_longest(funcs, args):
+            if arg:
+                func(*arg)
+            else:
+                func()
+
+        self.stop()
+        return self._stop - self._start
+
+
 class Ping(object):
-    def __init__(self, host, port=80, timeout=1, is_report=False):
+    def __init__(self, host, port=80, timeout=1):
+        self.print_ = Print()
+        self.timer = Timer()
+
         self._successed = 0
         self._failed = 0
         self._conn_times = []
         self._host = host
         self._port = port
         self._timeout = timeout
-        self._is_report = is_report
-        self._statistics_raw = []
-        self._report = []
+
+        self.print_.set_table_field_names(
+            ['Host', 'Port', 'Successed', 'Failed', 'Success Rate', 'Minimum', 'Maximum', 'Average'])
 
     def _create_socket(self, family, type_):
         return Socket(family, type_, self._timeout)
@@ -107,26 +133,15 @@ class Ping(object):
         except ZeroDivisionError:
             rate = '0.00'
         return rate
-    
-    def report(self):
-        x = PrettyTable()     
-        x.field_names = ['Host', 'Port', 'Successed', 'Failed', 'Success Rate', 'Minimum', 'Maximum', 'Average']
-        for r in self._report:
-            x.add_row(r)
 
-        return x.get_string()
-
-    def raw_result(self):
-        return ''.join(self._statistics_raw)
-        
-    
     def statistics(self, n):
         conn_times = self._conn_times if self._conn_times != [] else [0]
         minimum = '{0:.2f}ms'.format(min(conn_times))
         maximum = '{0:.2f}ms'.format(max(conn_times))
         average = '{0:.2f}ms'.format(avg(conn_times))
-        success_rate = self._success_rate()
-        self._report.append([
+        success_rate = self._success_rate() + '%'
+
+        self.print_.add_statistics(Statistics(
             self._host,
             self._port,
             self._successed,
@@ -134,34 +149,25 @@ class Ping(object):
             success_rate,
             minimum,
             maximum,
-            average]) 
-        
-        statistics_header = '\n--- {}[:{}] tcping statistics ---'.format(self._host, self._port)
-        statistics_body = '\n{} connections, {} successed, {} failed, {}% success rate'.format(
-            n, self._successed, self._failed, success_rate)
-        statistics_footer = '\nminimum = {}, maximum = {}, average = {}'.format(
-            minimum, maximum, average)
-        self._statistics_raw.append(statistics_header + statistics_body + statistics_footer)
-    
+            average))
+
     @property
     def result(self):
-        return self.report() if self._is_report else self.raw_result()
+        return self.print_
 
     def ping(self, count=10):
-
         for n in range(1, count + 1):
             s = self._create_socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 time.sleep(1)
+                cost_time = self.timer.cost(
+                    (s.connect, s.shutdown),
+                    ((self._host, self._port), None))
+                s_runtime = 1000 * (cost_time)
 
-                s_start = timer()
-                s.connect(self._host, self._port)
-                s.shutdown()
-                s_stop = timer()
-
-                s_runtime = 1000 * (s_stop - s_start)
                 print("Connected to %s[:%s]: seq=%d time=%.2f ms" % (
                     self._host, self._port, n, s_runtime))
+
                 self._conn_times.append(s_runtime)
             except socket.timeout:
                 print("Connected to %s[:%s]: seq=%d time out!" % (
@@ -170,7 +176,7 @@ class Ping(object):
 
             except KeyboardInterrupt:
                 self.statistics(n - 1)
-                sys.exit(1)
+                raise KeyboardInterrupt()
 
             else:
                 self._successed += 1
@@ -180,48 +186,24 @@ class Ping(object):
 
         self.statistics(n)
 
-    create_host_set(HOST_SET_CONFIG)
-    hostlist = load_host_set(HOST_SET_CONFIG)
 
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
+@click.command()
 @click.option('--port', '-p', default=80, type=click.INT, help='tcp port')
 @click.option('--count', '-c', default=10, type=click.INT, help='try connections counts')
 @click.option('--timeout', '-t', default=1, type=click.FLOAT, help='timeout seconds')
 @click.option('--report/--no-report', default=False, help='show report to replace statistics')
 @click.argument('host')
-def tcp(host, port, count, timeout, report):
-    click.echo(report)
-    ping = Ping(host, port, timeout, report)
-    ping.ping(count)
-    print(ping.result)
-
-
-@cli.command()
-@click.option('--port', '-p', default=80, type=click.INT, help='tcp port')
-@click.option('--count', '-c', default=3, type=click.INT, help='try connections counts')
-@click.option('--timeout', '-t', default=1, type=click.FLOAT, help='timeout seconds')
-@click.option('--report', default=False, type=click.BOOL, help='show report to replace statistics')
-@click.argument('hostset')
-def tcphosts(hostset, port, count, timeout, report):
-    create_host_set(HOST_SET_CONFIG)
-    hostlist = load_host_set(HOST_SET_CONFIG)
-    hosts = hostlist[hostset]
-    for host, port in hosts:
-        ping = Ping(host, port, timeout, is_report)
+def cli(host, port, count, timeout, report):
+    ping = Ping(host, port, timeout)
+    try:
         ping.ping(count)
-        print('\n')
+    except KeyboardInterrupt:
+        pass
 
-
-@cli.command()
-def clean():
-    click.echo('The .ipset.json file was successfully deleted')
-    os.remove(HOST_SET_CONFIG)
+    if report:
+        print(ping.result.table)
+    else:
+        print(ping.result.raw)
 
 
 if __name__ == '__main__':
