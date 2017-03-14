@@ -1,17 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
 import sys
+
+from setuptools import setup
+from tcping import __version__
 
 setup_requires = ['setuptools_scm']
 if sys.argv[-1] in ('sdist', 'bdist_wheel'):
     setup_requires.append('setuptools-markdown')
 
+
+def read_long_description():
+    try:
+        import pypandoc
+        return pypandoc.convert('README.md', 'rst')
+    except(IOError, ImportError, RuntimeError):
+        return ""
+
 setup(
     name='tcping',
+    version=__version__,
     author='zhengxiaowai',
     author_email='h1x2y3awalm@gmail.com',
+    long_description=read_long_description(),
     url='https://github.com/kontspace/tcping',
     description='command line for tcp ping',
     license='MIT',
