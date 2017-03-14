@@ -6,10 +6,6 @@ import sys
 from setuptools import setup
 from tcping import __version__
 
-setup_requires = ['setuptools_scm']
-if sys.argv[-1] in ('sdist', 'bdist_wheel'):
-    setup_requires.append('setuptools-markdown')
-
 
 def read_long_description():
     try:
@@ -30,8 +26,6 @@ setup(
     keywords='python tcp ping',
     scripts=['tcping.py'],
     install_requires=['six', 'click', 'prettytable'],
-    setup_requires=setup_requires,
-    use_scm_version=True,
     entry_points={
         'console_scripts': ['tcping = tcping:cli']
     },
@@ -43,7 +37,7 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: Microsoft",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 2"
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "Topic :: Utilities",
         "Topic :: System"

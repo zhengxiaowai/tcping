@@ -16,7 +16,7 @@ from six import print_
 from timeit import default_timer as timer
 from prettytable import PrettyTable
 
-__version__ = "0.1rc1"
+__version__ = "0.1.0rc1"
 
 Statistics = namedtuple('Statistics', [
     'host',
