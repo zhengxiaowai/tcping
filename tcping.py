@@ -10,7 +10,7 @@ import time
 import click
 
 from collections import namedtuple
-from itertools import zip_longest
+from six.moves import zip_longest
 from timeit import default_timer as timer
 from prettytable import PrettyTable
 
