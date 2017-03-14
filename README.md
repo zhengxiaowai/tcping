@@ -2,7 +2,7 @@
 
 一个类似于 ping 的系统工具，
 检测在连接 tcp 时候的延迟，
-比较正确是反应出网络的延迟情况，笔记 tcp 用途比较广。
+比较正确是反应出网络的延迟情况，毕竟 tcp 用途比较广。
 
 虽然和 icmp 的 ping 原理不同，ping 命令也能很大程度上反映出网络的延迟，
 但是该矫情还是要矫情一把的。
@@ -10,7 +10,7 @@
 ## Usage
 
 ```
-➜ ~ tcping.py api.github.com
+➜ ~ tcping api.github.com
 Connected to api.github.com[:80]: seq=1 time=617.20 ms
 Connected to api.github.com[:80]: seq=2 time out!
 Connected to api.github.com[:80]: seq=3 time=458.86 ms
@@ -30,7 +30,7 @@ minimum = 390.55ms, maximum = 617.20ms, average = 440.25ms
 呵呵，GFW，66666
  
 ```
-➜ ~ tcping.py --help
+➜ ~ tcping --help
 Usage: tcping.py [OPTIONS] HOST
 
 Options:
