@@ -20,6 +20,7 @@ def read_long_description():
     except(IOError, ImportError, RuntimeError):
         return ""
 
+
 setup(
     name='tcping',
     version=__version__,
@@ -30,6 +31,7 @@ setup(
     description='command line for tcp ping',
     license='MIT',
     keywords='python tcp ping',
+    py_modules=['tcping'],
     scripts=['tcping.py'],
     install_requires=['six', 'click', 'prettytable'],
     entry_points={
