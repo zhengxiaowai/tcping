@@ -7,7 +7,7 @@ from setuptools import setup
 with open("tcping.py") as fp:
     for line in fp:
         if line.startswith("__version__"):
-            __version__ = line.split("=").strip(" \"'\r\n")
+            __version__ = line.split("=")[1].strip(" \"'\r\n")
             break
     else:
         from tcping import __version__
