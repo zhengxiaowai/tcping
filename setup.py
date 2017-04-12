@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-
 from setuptools import setup
-from tcping import __version__
+
+
+with open("tcping.py") as fp:
+    for line in fp:
+        if line.startswith("__version__"):
+            __version__ = line.split("=").strip(" \"'\r\n")
+            break
+    else:
+        from tcping import __version__
 
 
 def read_long_description():
