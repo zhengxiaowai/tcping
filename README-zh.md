@@ -1,11 +1,11 @@
-# Tcping
+# tcping
 
-[中文](README-zh.md)
+一个类似于 ping 的系统工具，
+检测在连接 tcp 时候的延迟，
+比较正确是反应出网络的延迟情况，毕竟 tcp 用途比较广。
 
-The Tcping is a network tool.
-which is similar with ping.
-
-We often use the network is based on tcp, So use tcping more accurately.
+虽然和 icmp 的 ping 原理不同，ping 命令也能很大程度上反映出网络的延迟，
+但是该矫情还是要矫情一把的。
 
 ## Usage
 
@@ -31,7 +31,7 @@ Connected to api.github.com[:80]: seq=10 time=251.77 ms
 minimum = 233.51ms, maximum = 251.77ms, average = 243.40ms
 ```
 
-GFW Fucking.
+呵呵，GFW，66666
  
 ```
 ➜  ~ tcping --help
@@ -45,7 +45,7 @@ Options:
   --help  
 ```
 
-the result is ascii table by using `--report`.
+其中这个 `--report` 可以生成一个 ascii 的 table，好看一点吧。。。
 
 ```
 ➜  ~ tcping api.github.com -c 3 --report
@@ -61,5 +61,4 @@ Connected to api.github.com[:80]: seq=3 time=258.53 ms
 ```
 ## END 
 
-Huh, I just want to check my VPS's network status.
-
+其实写这个主要是为了测试搭建翻墙 VPS 的 tcp 延迟。。。
