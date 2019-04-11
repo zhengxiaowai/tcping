@@ -59,6 +59,21 @@ Connected to api.github.com[:80]: seq=3 time=258.53 ms
 | api.github.com |  80  |     3     |   0    |   100.00%    | 237.72ms | 258.53ms | 244.68ms |
 +----------------+------+-----------+--------+--------------+----------+----------+----------+
 ```
+
+返回的运行状态码可以用于实时的批量测试，例如判断服务器连通情况。0和1分别参照ICMP PING工具设定，0表示PING通。下面是一个简单的获取返回码测试。
+
+```python
+import subprocess as sp
+
+# Print the return code (status=0 mean ping success)
+status = sp.call(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+print(status)
+
+# OR print the full message
+sp.run(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+print(status)
+```
+
 ## END 
 
 其实写这个主要是为了测试搭建翻墙 VPS 的 tcp 延迟。。。

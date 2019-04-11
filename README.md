@@ -59,6 +59,21 @@ Connected to api.github.com[:80]: seq=3 time=258.53 ms
 | api.github.com |  80  |     3     |   0    |   100.00%    | 237.72ms | 258.53ms | 244.68ms |
 +----------------+------+-----------+--------+--------------+----------+----------+----------+
 ```
+
+The return code can be catch by some real-time test tools. Following is an example:
+
+```python
+import subprocess as sp
+
+# Print the return code (status=0 mean ping success)
+status = sp.call(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+print(status)
+
+# OR print the full message
+sp.run(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+print(status)
+```
+
 ## END 
 
 Huh, I just want to check my VPS's network status.
