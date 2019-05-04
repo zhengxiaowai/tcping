@@ -8,6 +8,7 @@
 import socket
 import time
 import click
+import sys
 
 from collections import namedtuple
 from functools import partial
@@ -161,6 +162,10 @@ class Ping(object):
     def result(self):
         return self.print_
 
+    @property
+    def status(self):
+        return self._successed == 0
+
     def ping(self, count=10):
         for n in range(1, count + 1):
             s = self._create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -210,6 +215,7 @@ def cli(host, port, count, timeout, report):
         iprint(ping.result.table)
     else:
         iprint(ping.result.raw)
+    sys.exit(ping.status)
 
 
 if __name__ == '__main__':
