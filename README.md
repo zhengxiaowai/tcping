@@ -70,7 +70,7 @@ status = sp.call(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNU
 print(status)
 
 # OR print the full message
-sp.run(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+status = sp.run(['tcping', '-c', '1', '-t', '1', 'github.com'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 print(status)
 ```
 
