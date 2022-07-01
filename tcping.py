@@ -189,6 +189,12 @@ class Ping(object):
                 self.statistics(n - 1)
                 raise KeyboardInterrupt()
 
+            except Exception as e:
+                iprint("Connected to %s[:%s]: seq=%d failed!" % (
+                    self._host, self._port, n))
+                iprint("Exception: ", e)
+                self._failed += 1
+
             else:
                 self._successed += 1
 
