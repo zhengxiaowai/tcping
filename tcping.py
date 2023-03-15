@@ -115,7 +115,7 @@ class Timer(object):
 
 
 class Ping(object):
-    def __init__(self, host, port=80, timeout=1):
+    def __init__(self, host, host_type, port=80, timeout=1):
         self.print_ = Print()
         self.timer = Timer()
 
@@ -125,6 +125,8 @@ class Ping(object):
         self._host = host
         self._port = port
         self._timeout = timeout
+
+        self.host_type = host_type
 
         self.print_.set_table_field_names(
             ['Host', 'Port', 'Successed', 'Failed', 'Success Rate', 'Minimum', 'Maximum', 'Average'])
@@ -168,7 +170,9 @@ class Ping(object):
 
     def ping(self, count=10):
         for n in range(1, count + 1):
-            s = self._create_socket(socket.AF_INET, socket.SOCK_STREAM)
+            af = socket.AF_INET if self.host_type == 1 else socket.AF_INET6
+            s = self._create_socket(af, socket.SOCK_STREAM)
+
             try:
                 time.sleep(1)
                 cost_time = self.timer.cost(
@@ -203,9 +207,33 @@ class Ping(object):
 @click.option('--count', '-c', default=10, type=click.INT, help='Try connections counts')
 @click.option('--timeout', '-t', default=1, type=click.FLOAT, help='Timeout seconds')
 @click.option('--report/--no-report', default=False, help='Show report to replace statistics')
+@click.option('--ipv4', '-4', is_flag=True, help='Use IPv4')
+@click.option('--ipv6', '-6', is_flag=True, help='Use IPv6')
 @click.argument('host')
-def cli(host, port, count, timeout, report):
-    ping = Ping(host, port, timeout)
+def cli(host, port, count, timeout, report, ipv4, ipv6):
+    #If we got a bare IP
+    try:
+        socket.inet_pton(socket.AF_INET, host)
+        #Got a valid IPv4, force the use of IPv4
+        (ipv4, ipv6) = (True, False)
+    except socket.error:
+        try:
+            socket.inet_pton(socket.AF_INET6, host)
+            #Got a valid IPv6, force the use of IPv6
+            (ipv6, ipv4) = (True, False)
+        except:
+            #Possibly hostname
+            pass
+
+    if ipv4 and ipv6: #Invalid
+        iprint("Cannot use IPv4 and IPv6 at the same time. ")
+        sys.exit(1)
+    elif ipv6:
+        host_type = 2
+    else: #Defaults to IPv4 for backward compatibility
+        host_type = 1
+
+    ping = Ping(host, host_type, port, timeout)
     try:
         ping.ping(count)
     except KeyboardInterrupt:
